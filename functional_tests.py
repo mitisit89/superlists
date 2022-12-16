@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import time
 import unittest
 
@@ -23,12 +25,9 @@ class NewVisitorTest(unittest.TestCase):
         inputbox.send_keys("Buy feather")
         inputbox.send_keys(Keys.ENTER)
         time.sleep(1)
-        table = self.browser.find_elements(By.ID, "id_list_table")
+        table = self.browser.find_element(By.ID, "id_list_table")
         rows = self.browser.find_elements(By.TAG_NAME, "tr")
-        self.assertTrue(
-            any(row.text == "1:Buy feather" for row in rows),
-            "Новый элемент списка не появился в таблице",
-        )
+        self.assertIn("1:Buy feather", [row.text for row in rows])
         self.fail("Test was ended!")
 
 
