@@ -24,12 +24,12 @@ class NewVisitorTest(LiveServerTestCase):
                 rows = table.find_elements(By.TAG_NAME, "tr")
                 self.assertIn(row_text, [row.text for row in rows])
                 return
-            except (ArithmeticError, WebDriverException) as e:
+            except (AssertionError, WebDriverException) as e:
                 if time.time() - start_time > MAX_WAIT:
                     raise e
                 time.sleep(0.5)
 
-    def test_can_start_a_list_and_retrieve_it_later(self):
+    def test_can_start_a_list_for_one_user(self):
         # Edith has heard about a cool new online to-do app. She goes
         # to check out its homepage
         self.browser.get(self.live_server_url)
@@ -50,7 +50,6 @@ class NewVisitorTest(LiveServerTestCase):
         # When she hits enter, the page updates, and now the page lists
         # "1: Buy peacock feathers" as an item in a to-do list table
         inputbox.send_keys(Keys.ENTER)
-
         self.wait_for_row_in_list_table("1: Buy peacock feathers")
 
         # There is still a text box inviting her to add another item. She
@@ -64,11 +63,31 @@ class NewVisitorTest(LiveServerTestCase):
         self.wait_for_row_in_list_table("2: Use peacock feathers to make a fly")
         self.wait_for_row_in_list_table("1: Buy peacock feathers")
 
-        # Edith wonders whether the site will remember her list. Then she sees
-        # that the site has generated a unique URL for her -- there is some
-        # explanatory text to that effect.
-        self.fail("Finish the test!")
+        # Satisfied, she goes back to sleep        # She visits that URL - her to-do list is still there.
 
-        # She visits that URL - her to-do list is still there.
+    def test_muliple_users_can_start_lists_at_different_urls(self):
+        self.browser.get(self.live_server_url)
+        inputbox = self.browser.find_element(By.ID, "id_new_item")
+        inputbox.send_keys("Buy peacock feathers")
+        inputbox.send_keys(Keys.ENTER)
+        self.wait_for_row_in_list_table("1: Buy peacock feathers")
+        edith_list_url = self.browser.current_url
+        self.assertRegex(edith_list_url, "/lists/.+")
+        self.browser.quit()
+        self.browser = webdriver.Firefox()
+        self.browser.get(self.live_server_url)
+        page_text = self.find_element(By.TAG_NAME, "body").text
+        self.assertNotIn("Buy peacock feathers", page_text)
+        self.assertNotIn("make a fly", page_text)
+        inputbox = self.browser.find_element(By.ID, "id_new_item")
+        inputbox.send_keys("Buy milk")
+        inputbox.send_keys(Keys.ENTER)
+        self.wait_for_row_in_list_table("1: Buy milk")
+        francis_list_url = self.browser.current_url
+        self.assertRegex(francis_list_url, "/lists/.+")
+        self.assertNotEqual(francis_list_url, edith_list_url)
 
-        # Satisfied, she goes back to sleep
+        # Again, there is no trace of Edith's list
+        page_text = self.browser.find_element(By.ID, "body").text
+        self.assertNotIn("Buy peacock feathers", page_text)
+        self.assertIn("Buy milk", page_text)
