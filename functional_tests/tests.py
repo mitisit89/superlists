@@ -76,7 +76,7 @@ class NewVisitorTest(LiveServerTestCase):
         self.browser.quit()
         self.browser = webdriver.Firefox()
         self.browser.get(self.live_server_url)
-        page_text = self.find_element(By.TAG_NAME, "body").text
+        page_text = self.browser.find_element(By.TAG_NAME, "body").text
         self.assertNotIn("Buy peacock feathers", page_text)
         self.assertNotIn("make a fly", page_text)
         inputbox = self.browser.find_element(By.ID, "id_new_item")
