@@ -10,10 +10,10 @@ MAX_WAIT: int = 10
 
 
 class NewVisitorTest(LiveServerTestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.browser = webdriver.Firefox()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.browser.quit()
 
     def wait_for_row_in_list_table(self, row_text):
@@ -28,6 +28,14 @@ class NewVisitorTest(LiveServerTestCase):
                 if time.time() - start_time > MAX_WAIT:
                     raise e
                 time.sleep(0.5)
+
+    def test_layout_and_styling(self):
+        self.browser.get(self.live_server_url)
+        self.browser.set_window_size(1024, 768)
+        inputbox = self.browser.find_element(By.ID, "id_new_item")
+        self.assertAlmostEqual(
+            inputbox.location["x"] + inputbox.size["width"] / 2, 512, delta=10
+        )
 
     def test_can_start_a_list_for_one_user(self):
         # Edith has heard about a cool new online to-do app. She goes
