@@ -1,3 +1,4 @@
+from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
@@ -58,7 +59,7 @@ class NewVisitorTest(FunctionalTest):
         ## We use a new browser session to make sure that no information
         ## of Edith's is coming through from cookies etc
         self.browser.quit()
-
+        self.browser = webdriver.Firefox()
         # Francis visits the home page.  There is no sign of Edith's
         # list
         self.browser.get(self.server_url)
@@ -68,7 +69,7 @@ class NewVisitorTest(FunctionalTest):
 
         # Francis starts a new list by entering a new item. He
         # is less interesting than Edith...
-        inputbox = self.browser.find_element_by_id("id_new_item")
+        inputbox = self.browser.find_element(By.ID, "id_new_item")
         inputbox.send_keys("Buy milk")
         inputbox.send_keys(Keys.ENTER)
         self.wait_for_row_in_list_table("1: Buy milk")
